@@ -30,9 +30,33 @@ class Wordle:
         Correct Letter/Wrong Position: 1
         Wrong Letter/Wrong Position: 0
         """
+        target_rep = [ch for ch in self.secret_word]
+        target_ch_count = {}
+        for ch in target_rep:
+            if ch not in target_ch_count:
+                target_ch_count[ch] = 0
+            target_ch_count[ch] += 1
 
-        return [2, 2, 2, 2, 2]
+        guess_rep = [ch for ch in guess]
 
+        # Assign all 2's (correct letter/correct position)
+        final_rep = []
+        for i, target_ch in enumerate(target_rep):
+            guess_ch = guess_rep[i]
 
-word1 = Wordle(5)
-print(word1.secret_word)
+            if target_ch == guess_ch:
+                final_rep.append(2)
+                target_ch_count[guess_ch] -= 1
+            else:
+                final_rep.append(0)
+
+        # Assign all 1's (correct letter/wrong position)
+        for i, target_ch in enumerate(target_rep):
+            guess_ch = guess_rep[i]
+            if final_rep[i] == 2:
+                continue
+            else:
+                if guess_ch in target_rep and target_ch_count[guess_ch] > 0:
+                    final_rep[i] = 1
+
+        return final_rep
