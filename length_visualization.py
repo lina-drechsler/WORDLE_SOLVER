@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 #clean up the data after scaraped (ignore dashes, spaces etc)
 
+
 #count the lenghts using a dictionary
 d = {}
 for w in words:
