@@ -1,0 +1,4 @@
+finds
+print
+spent
+cross
