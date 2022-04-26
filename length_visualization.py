@@ -24,6 +24,6 @@ plt.bar(length, count)
 plt.xticks(range(1, max(length) + 1))
 plt.xlabel("word lengths (in letters)")
 plt.ylabel("word count")
-plt.title("quanitity of n-lettered words in the dictionary")
+plt.title("quantity of n-lettered words in the dictionary")
 
 plt.show()
