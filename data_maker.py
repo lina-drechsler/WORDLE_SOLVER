@@ -9,7 +9,7 @@ with open(file, "r") as f:
     lines = f.readlines()
     for word in lines:
         word = word.rstrip()
-        word_len = len(word)
+        word_len = int(len(word))
         if word_len not in all_words:
             all_words[word_len] = []
         all_words[word_len].append(word)
@@ -23,8 +23,6 @@ for key in keys:
         continue
 
 # Step 3: Write the words of each length to their respective .txt files
-import os
-
 for word_len, words in sorted(all_words.items()):
     path = f"./data/{word_len}.txt"
     with open(path, "w") as f:
