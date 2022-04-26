@@ -6,6 +6,9 @@ class Wordle:
         self.length = length
         self.secret_word = self.get_word()
 
+    def __repr__(self):
+        return f"The word is: {self.secret_word}"
+
     def get_word(self):
         """
         Returns a random word of size self.length to be used as the secret word.
@@ -60,3 +63,8 @@ class Wordle:
                     final_rep[i] = 1
 
         return final_rep
+
+
+game1 = Wordle(5)
+print(game1.make_guess("steam"))
+print(game1)
