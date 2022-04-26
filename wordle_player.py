@@ -2,17 +2,24 @@ from random import randint
 
 
 class Wordle:
-    def __init__(self, length):
+    def __init__(self, length=5):
         self.length = length
-        self.secret_word = self.get_word()
+        self.secret_word = self.set_word()
 
     def __repr__(self):
         return f"The word is: {self.secret_word}"
 
-    def get_word(self):
+    def set_word(self, automate=True, manual_index=0):
         """
         Returns a random word of size self.length to be used as the secret word.
         """
+        import json
+
+        if automate == False:
+            with open("words.json") as json_data:
+                data = json.loads(json_data)
+            return data[str(self.length)][manual_index]
+
         file = f"./data/{self.length}.txt"
 
         words = []
