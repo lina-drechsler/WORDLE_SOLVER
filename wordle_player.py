@@ -2,20 +2,24 @@ from random import randint
 
 
 class Wordle:
-    def __init__(self, length=5):
+    def __init__(self, length=5, is_random_word=True):
         self.length = length
         self.secret_word = self.set_word()
+        self.is_random_word = is_random_word
+        self.run_status = True
+        self.number_attempts = 0
+        self.guesses_dict = {}
 
     def __repr__(self):
         return f"The word is: {self.secret_word}"
 
-    def set_word(self, automate=True, manual_index=0):
+    def set_word(self, manual_index=0):
         """
         Returns a random word of size self.length to be used as the secret word.
         """
         import json
 
-        if automate == False:
+        if self.is_random_word == False:
             with open("words.json") as json_data:
                 data = json.loads(json_data)
             return data[str(self.length)][manual_index]
@@ -32,7 +36,26 @@ class Wordle:
 
         return random_word
 
-    def make_guess(self, guess):
+    # def get_possible_guesses(self):
+    #     """
+    #     Returns a list of possible guesses
+    #     """
+    #     import json
+
+    #     with open("words.json") as json_data:
+    #          data = json.loads(json_data)
+    #          possible_words = data[str(self.length)]
+
+    #         word_rep = [ch for ch in word]
+    #         for board in self.boards:
+    #             for stat in board:
+
+    # def evaluate_guesses(self):
+    #     """
+    #     Returns the best possible next guess
+    #     """
+
+    def result_rep(self, guess):
         """
         Returns the resulting representation of a word guess.
 
@@ -71,7 +94,9 @@ class Wordle:
 
         return final_rep
 
+    def make_guess(self, guess):
+        self.guesses_dict[guess] = self.result_rep(guess)
+        self.number_attempts += 1
 
-game1 = Wordle(5)
-print(game1.make_guess("steam"))
-print(game1)
+        if guess == self.secret_word:
+            self.run_status = False
