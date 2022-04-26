@@ -36,9 +36,9 @@ class Wordle:
 
         return random_word
 
-    # def get_possible_guesses(self):
+    # def find_guess(self):
     #     """
-    #     Returns a list of possible guesses
+    #     Returns the "optimal" guess
     #     """
     #     import json
 
@@ -46,14 +46,11 @@ class Wordle:
     #          data = json.loads(json_data)
     #          possible_words = data[str(self.length)]
 
-    #         word_rep = [ch for ch in word]
-    #         for board in self.boards:
-    #             for stat in board:
+    #     with open("XXXXXX.json") as json_data:
+    #         data = json.loads(json_data)
+    #         letter_count_dict = data[str(self.length)]
 
-    # def evaluate_guesses(self):
-    #     """
-    #     Returns the best possible next guess
-    #     """
+    #     for
 
     def result_rep(self, guess):
         """
