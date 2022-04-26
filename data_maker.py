@@ -9,7 +9,7 @@ with open(file, "r") as f:
     lines = f.readlines()
     for word in lines:
         word = word.rstrip()
-        word_len = int(len(word))
+        word_len = len(word)
         if word_len not in all_words:
             all_words[word_len] = []
         all_words[word_len].append(word)
