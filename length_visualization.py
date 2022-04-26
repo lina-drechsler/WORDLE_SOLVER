@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 # clean up the data after scaraped (ignore dashes, spaces etc)
 words = []
-with open("./data/words_alpha.txt", "r") as f:
+with open("./data/words_alpha1.txt", "r") as f:
     for word in f.readlines():
         words.append(word.rstrip())
 
