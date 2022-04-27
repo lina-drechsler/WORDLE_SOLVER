@@ -4,8 +4,9 @@ from random import randint
 class Wordle:
     def __init__(self, length=5, is_random_word=True):
         self.length = length
-        self.secret_word = self.set_word()
         self.is_random_word = is_random_word
+        self.secret_word = self.set_word()
+
         self.run_status = True
         self.number_attempts = 0
         self.guesses_dict = {}
@@ -21,7 +22,7 @@ class Wordle:
 
         if self.is_random_word == False:
             with open("words.json") as json_data:
-                data = json.loads(json_data)
+                data = json.load(json_data)
             return data[str(self.length)][manual_index]
 
         file = f"./data/{self.length}.txt"
@@ -36,21 +37,40 @@ class Wordle:
 
         return random_word
 
-    # def find_guess(self):
-    #     """
-    #     Returns the "optimal" guess
-    #     """
-    #     import json
+    def find_first_guess(self):
+        """
+        Returns the "optimal" first guess based on the character frequency per position
+        """
+        import json
 
-    #     with open("words.json") as json_data:
-    #          data = json.loads(json_data)
-    #          possible_words = data[str(self.length)]
+        with open("words.json") as json_data:
+            data = json.load(json_data)
+            possible_words = data[str(self.length)]
 
-    #     with open("XXXXXX.json") as json_data:
-    #         data = json.loads(json_data)
-    #         letter_count_dict = data[str(self.length)]
+        with open("counts.json") as json_data:
+            data = json.load(json_data)
+            letter_count_dict = data[str(self.length)]
 
-    #     for
+        # Set the Baseline Guess
+        best_guess = possible_words[0]
+        best_guess_sum = 0
+
+        for i, ch in enumerate(best_guess):
+            letter_freq = letter_count_dict[ch][i]
+            best_guess_sum += letter_freq
+
+        # Loop through all words to find best guess
+        for word in possible_words[1:]:
+            cur_word_sum = 0
+            for i, ch in enumerate(word):
+                letter_freq = letter_count_dict[ch][i]
+                cur_word_sum += letter_freq
+
+            if cur_word_sum > best_guess_sum:
+                best_guess = word
+                best_guess_sum = cur_word_sum
+
+        return best_guess
 
     def result_rep(self, guess):
         """
@@ -97,3 +117,8 @@ class Wordle:
 
         if guess == self.secret_word:
             self.run_status = False
+
+
+game1 = Wordle(5, False)
+game1.set_word(0)
+print(f"Best 5-letter guess: {game1.find_first_guess()}")
