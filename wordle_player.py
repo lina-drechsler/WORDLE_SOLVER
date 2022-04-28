@@ -2,14 +2,18 @@ from random import randint
 
 
 class Wordle:
-    def __init__(self, length=5, is_random_word=True):
+    def __init__(self, length=5, is_random_word=True, manual_index=0):
         self.length = length
         self.is_random_word = is_random_word
-        self.secret_word = self.set_word()
+        self.manual_index = manual_index
+        if is_random_word:
+            self.secret_word = self.set_word()
+        else:
+            self.secret_word = self.set_word(manual_index)
 
         self.run_status = True
         self.number_attempts = 0
-        self.guesses_dict = {"x": [0 for _ in range(self.length)]}
+        self.guesses_dict = {}
 
     def __repr__(self):
         return f"The word is: {self.secret_word}"
@@ -90,6 +94,67 @@ class Wordle:
             data = json.load(json_data)
             letter_count_dict = data[str(self.length)]
 
+        # Update possible_words based on information from previous guesses
+        all_letters = [
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            "f",
+            "g",
+            "h",
+            "i",
+            "j",
+            "k",
+            "l",
+            "m",
+            "n",
+            "o",
+            "p",
+            "q",
+            "r",
+            "s",
+            "t",
+            "u",
+            "v",
+            "w",
+            "x",
+            "y",
+            "z",
+        ]
+        template = {}
+        for i in range(self.length):
+            template[i] = all_letters
+
+        # incorrect_letters = []
+
+        if len(self.guesses_dict) > 0:
+            # First, find all the correct letters/correct positions for the template
+            for word, rep in self.guesses_dict.items():
+                for i, ch in enumerate(word):
+                    if rep[i] == 2:
+                        template[i] = [ch]
+            # Second, find all the correct letters/incorrect positions for the template
+            for word, rep in self.guesses_dict.items():
+                for i, ch in enumerate(word):
+                    if rep[i] == 1 and ch in template[i]:
+                        template[i].pop(i)
+            # Last, add all the incorrect letters to the incorrect_letters list
+            for word, rep in self.guesses_dict.items():
+                for i, ch in enumerate(word):
+                    if rep[i] == 0:
+                        for j, values in template.items():
+                            if ch in template[j]:
+                                # print(j)
+                                # print(ch)
+                                # print(values)
+                                ch_index = values.index(ch)
+                                print(ch_index)
+                                template[j].pop(ch_index)
+
+                        # incorrect_letters.append(ch)
+
         # Set the Baseline Guess
         best_guess = possible_words[0]
         best_guess_sum = 0
@@ -102,13 +167,20 @@ class Wordle:
         for word in possible_words[1:]:
             cur_word_sum = 0
             for i, ch in enumerate(word):
+                if ch not in template[i]:
+                    continue
+                # if ch in incorrect_letters:
+                #     continue
+                # elif len(template[i]) == 1 and ch not in template[i]:
+                #     continue
+                # elif len(template[i]) > 1 and ch in
                 letter_freq = letter_count_dict[ch][i]
                 cur_word_sum += letter_freq
 
             if cur_word_sum > best_guess_sum:
                 best_guess = word
                 best_guess_sum = cur_word_sum
-
+        print(best_guess)
         return best_guess
 
     def make_guess(self, guess):
@@ -125,7 +197,12 @@ class Wordle:
 
         return cur_guess
 
+    def get_attempts(self):
+        return self.number_attempts
 
-game1 = Wordle(5, False)
-game1.set_word(0)
-print(f"Best 5-letter guess: {game1.find_guess()}")
+
+game1 = Wordle(length=5, is_random_word=False, manual_index=1)
+print(game1)
+final_guess = game1.solve()
+number_attempts = game1.get_attempts()
+print(f"Solved for {final_guess} in {number_attempts}")
