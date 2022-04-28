@@ -9,7 +9,7 @@ class Wordle:
 
         self.run_status = True
         self.number_attempts = 0
-        self.guesses_dict = {}
+        self.guesses_dict = {"x": [0 for _ in range(self.length)]}
 
     def __repr__(self):
         return f"The word is: {self.secret_word}"
@@ -36,41 +36,6 @@ class Wordle:
         random_word = words[index]
 
         return random_word
-
-    def find_first_guess(self):
-        """
-        Returns the "optimal" first guess based on the character frequency per position
-        """
-        import json
-
-        with open("words.json") as json_data:
-            data = json.load(json_data)
-            possible_words = data[str(self.length)]
-
-        with open("counts.json") as json_data:
-            data = json.load(json_data)
-            letter_count_dict = data[str(self.length)]
-
-        # Set the Baseline Guess
-        best_guess = possible_words[0]
-        best_guess_sum = 0
-
-        for i, ch in enumerate(best_guess):
-            letter_freq = letter_count_dict[ch][i]
-            best_guess_sum += letter_freq
-
-        # Loop through all words to find best guess
-        for word in possible_words[1:]:
-            cur_word_sum = 0
-            for i, ch in enumerate(word):
-                letter_freq = letter_count_dict[ch][i]
-                cur_word_sum += letter_freq
-
-            if cur_word_sum > best_guess_sum:
-                best_guess = word
-                best_guess_sum = cur_word_sum
-
-        return best_guess
 
     def result_rep(self, guess):
         """
@@ -111,6 +76,41 @@ class Wordle:
 
         return final_rep
 
+    def find_guess(self):
+        """
+        Returns the "optimal" first guess based on the character frequency per position
+        """
+        import json
+
+        with open("words.json") as json_data:
+            data = json.load(json_data)
+            possible_words = data[str(self.length)]
+
+        with open("counts.json") as json_data:
+            data = json.load(json_data)
+            letter_count_dict = data[str(self.length)]
+
+        # Set the Baseline Guess
+        best_guess = possible_words[0]
+        best_guess_sum = 0
+
+        for i, ch in enumerate(best_guess):
+            letter_freq = letter_count_dict[ch][i]
+            best_guess_sum += letter_freq
+
+        # Loop through all words to find best guess
+        for word in possible_words[1:]:
+            cur_word_sum = 0
+            for i, ch in enumerate(word):
+                letter_freq = letter_count_dict[ch][i]
+                cur_word_sum += letter_freq
+
+            if cur_word_sum > best_guess_sum:
+                best_guess = word
+                best_guess_sum = cur_word_sum
+
+        return best_guess
+
     def make_guess(self, guess):
         self.guesses_dict[guess] = self.result_rep(guess)
         self.number_attempts += 1
@@ -118,7 +118,14 @@ class Wordle:
         if guess == self.secret_word:
             self.run_status = False
 
+    def solve(self):
+        while self.run_status == True:
+            cur_guess = self.find_guess()
+            self.make_guess(cur_guess)
+
+        return cur_guess
+
 
 game1 = Wordle(5, False)
 game1.set_word(0)
-print(f"Best 5-letter guess: {game1.find_first_guess()}")
+print(f"Best 5-letter guess: {game1.find_guess()}")
