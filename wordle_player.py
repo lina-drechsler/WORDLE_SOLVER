@@ -14,6 +14,8 @@ class Wordle:
         self.run_status = True
         self.number_attempts = 0
         self.guesses_dict = {}
+        self.templates = []
+        self.incorrect_letters = []
 
     def __repr__(self):
         return f"The word is: {self.secret_word}"
@@ -110,47 +112,39 @@ class Wordle:
             "y",
             "z",
         ]
-        template = {}
-        for i in range(self.length):
-            template[i] = all_letters
+        if len(self.guesses_dict) == 0:
+            template = {}
+            for i in range(self.length):
+                template[i] = all_letters
+            incorrect_letters = []
 
-        incorrect_letters = []
-
-        if len(self.guesses_dict) > 0:
+        else:
+            template = self.templates[-1]
             # First, find all the correct letters/correct positions for the template
-            print(list(self.guesses_dict.items())[-1])
+            for word, rep in self.guesses_dict.items():
+                for i, ch in enumerate(word):
+                    if rep[i] == 2:
+                        template[i] = [ch]
+            # Second, find all the correct letters/incorrect positions for the template
             word, rep = list(self.guesses_dict.items())[-1]
             for i, ch in enumerate(word):
-                if rep[i] == 2:
-                    template[i] = [ch]
-            # Second, find all the correct letters/incorrect positions for the template
-            # THIS IS WHERE THE INFINITE PROBLEM IS OCCURING
-            # word, rep = list(self.guesses_dict.items())[-1]
-            for i, ch in enumerate(word):
-                # print(i, ch)
-                # print(rep[i])
-                # print("----------")
                 if ch in template[i] and rep[i] == 1:
-                    # print(f"'1' rep: {ch}")
-                    # print(template[i])
                     ch_index = template[i].index(ch)
-                    # print(ch_index)
                     template[i].pop(ch_index)
-                    # print(template[i])
             # THIS IS WHERE THE INFINITE PROBLEM IS ENDING
 
             # Add all the incorrect letters to the incorrect_letters list
-            # word, rep = list(self.guesses_dict.items())[-1]
-            for i, ch in enumerate(word):
-                if rep[i] == 0:
-                    incorrect_letters.append(ch)
+            for word, rep in self.guesses_dict.items():
+                for i, ch in enumerate(word):
+                    if rep[i] == 0:
+                        self.incorrect_letters.append(ch)
             # Last, remove all the incorrect letters from the template
             for key in template:
                 tem_letters = template[key]
                 for i, ch in enumerate(tem_letters):
-                    if ch in incorrect_letters:
+                    if ch in self.incorrect_letters:
                         template[key].pop(i)
-
+        self.templates.append(template)
         return template
 
     def find_guess(self):
@@ -189,6 +183,7 @@ class Wordle:
             if cur_word_sum > best_guess_sum:
                 best_guess = word
                 best_guess_sum = cur_word_sum
+        print(template)
         print(best_guess)
         return best_guess
 
