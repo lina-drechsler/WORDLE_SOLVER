@@ -1,4 +1,5 @@
 from random import randint
+import json
 
 
 class Wordle:
@@ -13,9 +14,14 @@ class Wordle:
 
         self.run_status = True
         self.number_attempts = 0
-        self.guesses_dict = {}
-        self.templates = []
         self.incorrect_letters = []
+        self.incorrect_positions = {x: set() for x in range(self.length)}
+        self.guesses_dict = {}
+
+        with open("words.json") as json_data:
+            data = json.load(json_data)
+
+            self.possible_words = data[str(self.length)]
 
     def __repr__(self):
         return f"The word is: {self.secret_word}"
@@ -24,7 +30,6 @@ class Wordle:
         """
         Returns a random word of size self.length to be used as the secret word.
         """
-        import json
 
         if self.is_random_word == False:
             with open("words.json") as json_data:
@@ -112,57 +117,76 @@ class Wordle:
             "y",
             "z",
         ]
-        if len(self.guesses_dict) == 0:
-            template = {}
-            for i in range(self.length):
-                template[i] = all_letters
-            incorrect_letters = []
 
-        else:
-            template = self.templates[-1]
-            # First, find all the correct letters/correct positions for the template
-            for word, rep in self.guesses_dict.items():
-                for i, ch in enumerate(word):
-                    if rep[i] == 2:
-                        template[i] = [ch]
-            # Second, find all the correct letters/incorrect positions for the template
-            word, rep = list(self.guesses_dict.items())[-1]
+        # template = {}
+        # for i in range(self.length):
+        #     template[i] = all_letters
+
+        template = {}
+        for i in range(self.length):
+            template[i] = []
+
+        # First, find all the correct letters/correct positions for the template
+        for word, rep in self.guesses_dict.items():
             for i, ch in enumerate(word):
-                if ch in template[i] and rep[i] == 1:
-                    ch_index = template[i].index(ch)
-                    template[i].pop(ch_index)
-            # THIS IS WHERE THE INFINITE PROBLEM IS ENDING
+                if rep[i] == 2:
+                    template[i] = [ch]
 
-            # Add all the incorrect letters to the incorrect_letters list
-            for word, rep in self.guesses_dict.items():
-                for i, ch in enumerate(word):
-                    if rep[i] == 0:
-                        self.incorrect_letters.append(ch)
+        # Second, find all the correct letters/incorrect positions for the template
+        for word, rep in self.guesses_dict.items():
+            for i, ch in enumerate(word):
+                if rep[i] == 1:
+                    self.incorrect_positions[i].add(ch)
+                    for j, values in template.items():
+                        if ch in values:
+                            ch_index = template[j].index(ch)
+                            template[j].pop(ch_index)
+
+                        if (
+                            j != i
+                            and rep[j] != 2
+                            and ch not in self.incorrect_positions[j]
+                        ):
+                            template[j].append(ch)
+
+                    # cur_letters = template[i]
+                    # # template[]
+                    # # ch_index = template[i].index(ch)
+                    # new_letters = []
+                    # for letter in all_letters:
+                    #     if letter != ch and letter in cur_letters:
+                    #         new_letters.append(ch)
+                    # template[i] = new_letters
+
+                    # template[i].pop(ch_index)
+        # THIS IS WHERE THE INFINITE PROBLEM IS ENDING
+
+        # Add all the incorrect letters to the incorrect_letters list
+        for word, rep in self.guesses_dict.items():
+            for i, ch in enumerate(word):
+                if rep[i] == 0:
+                    self.incorrect_letters.append(ch)
+                    # cur_letters = template[i]
+                    # self.incorrect_letters.append(ch)
             # Last, remove all the incorrect letters from the template
-            for key in template:
-                tem_letters = template[key]
-                for i, ch in enumerate(tem_letters):
-                    if ch in self.incorrect_letters:
-                        template[key].pop(i)
-        self.templates.append(template)
+
+        # for key in template:
+        #     tem_letters = template[key]
+        #     for i, ch in enumerate(tem_letters):
+        #         if ch in self.incorrect_letters:
+        #             template[key].pop(i)
         return template
 
     def find_guess(self):
         """
         Returns the "optimal" first guess based on the character frequency per position
         """
-        import json
-
-        with open("words.json") as json_data:
-            data = json.load(json_data)
-            possible_words = data[str(self.length)]
-
         with open("counts.json") as json_data:
             data = json.load(json_data)
             letter_count_dict = data[str(self.length)]
 
         # Set the Baseline Guess
-        best_guess = possible_words[0]
+        best_guess = self.possible_words[0]
         best_guess_sum = 0
 
         for i, ch in enumerate(best_guess):
@@ -171,11 +195,16 @@ class Wordle:
 
         template = self.make_template()
 
-        # Loop through all words to find best guess
-        for word in possible_words[1:]:
+        possible_guesses = []
+        # Loop through all words to find possible words
+        for word in self.possible_words[1:]:
             cur_word_sum = 0
             for i, ch in enumerate(word):
-                if ch not in template[i]:
+                if ch in self.incorrect_letters:
+                    continue
+                elif len(template[i]) > 0 and ch not in template[i]:
+                    continue
+                elif ch in self.incorrect_positions[i]:
                     continue
                 letter_freq = letter_count_dict[ch][i]
                 cur_word_sum += letter_freq
@@ -183,13 +212,12 @@ class Wordle:
             if cur_word_sum > best_guess_sum:
                 best_guess = word
                 best_guess_sum = cur_word_sum
-        print(template)
-        print(best_guess)
         return best_guess
 
     def make_guess(self, guess):
         self.guesses_dict[guess] = self.result_rep(guess)
         self.number_attempts += 1
+        self.possible_words.remove(guess)
 
         if guess == self.secret_word:
             self.run_status = False
@@ -198,16 +226,17 @@ class Wordle:
         while self.run_status == True:
             cur_guess = self.find_guess()
             self.make_guess(cur_guess)
-            if self.number_attempts > 10:
-                break
         return cur_guess
 
     def get_attempts(self):
         return self.number_attempts
 
+    def get_secret_word(self):
+        return self.secret_word
 
-game1 = Wordle(length=5, is_random_word=False, manual_index=2)
-print(game1)
-final_guess = game1.solve()
-number_attempts = game1.get_attempts()
-print(f"Solved for {final_guess} in {number_attempts}")
+
+# game1 = Wordle(length=5, is_random_word=False, manual_index=1)
+# print(game1)
+# final_guess = game1.solve()
+# number_attempts = game1.get_attempts()
+# print(f"Solved for {final_guess} in {number_attempts}")
