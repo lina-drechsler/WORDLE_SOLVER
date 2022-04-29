@@ -1,4 +1,4 @@
-# Takes the data from words_alpha.txt and organizes the words into .txt files based on word length
+# Takes the data from data/words_alpha1.txt and organizes the words into .txt files based on word length
 
 # Step 1: Get all the data into a dictionary
 file = "./data/words_alpha1.txt"
@@ -15,6 +15,7 @@ with open(file, "r") as f:
         all_words[word_len].append(word)
 
 # Step 2: Only include word lengths between 3 and 10 letters (inclusive)
+# We decided this based off of the lenth visualization
 keys = list(all_words.keys())
 for key in keys:
     if key < 3 or key > 10:
