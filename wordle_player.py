@@ -232,6 +232,7 @@ class Wordle:
         # Should possible_guesses replace self.possible_words ???? *********************
         return possible_guesses
 
+    # calculate_shorted_next_guesses(self, possible_guesses):
     def calculate_entropies(self, possible_guesses):
         """
         Returns a dictionary of the entropies for each possible guess
@@ -242,7 +243,7 @@ class Wordle:
         for guess in possible_guesses:
             # Make a temporary template for this guess
 
-            # Find the words that fit into this temporary template
+            # Find the words that could be the next possible_guesses (using find_guesses())
 
             # Caluclate the length of the template
             # Calculate the current gueses entropy
