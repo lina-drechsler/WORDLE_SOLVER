@@ -42,6 +42,18 @@ class Wordle:
         """
         return f"The word is: {self.secret_word}"
 
+    def get_attempts(self):
+        """
+        Returns the number of guesses that the game has placyed. Helper function.
+        """
+        return self.number_attempts
+
+    def get_secret_word(self):
+        """
+        Returns the secret word of the game. Helper function.
+        """
+        return self.secret_word
+
     def set_word(self, manual_index=0):
         """
         Returns a random word of size self.length to be used as the secret word.
@@ -156,8 +168,7 @@ class Wordle:
 
         return template
 
-    # MAY NOT NEED THIS FUNCTION
-    def find_guess(self):
+    def find_first_guess(self):
         """
         Returns the "optimal" first guess based on the character frequency per position
         """
@@ -167,34 +178,34 @@ class Wordle:
             letter_count_dict = data[str(self.length)]
 
         # Set the Baseline Guess
-        best_guess = self.possible_words[0]
+        best_first_guess = self.possible_words[0]
         best_guess_sum = 0
-        for i, ch in enumerate(best_guess):
+        for i, ch in enumerate(best_first_guess):
             letter_freq = letter_count_dict[ch][i]
             best_guess_sum += letter_freq
 
         # Get the word template that will be used to find potential guesses
-        template = self.make_template()
+        # template = self.make_template()
 
         # Loop through all words to find possible words
         for word in self.possible_words[1:]:
             cur_word_sum = 0
             for i, ch in enumerate(word):
-                if ch in self.incorrect_letters:
-                    continue
+                # if ch in self.incorrect_letters:
+                #     continue
                 # I'm not sure if this condition is neccessary......
                 # elif len(template[i]) > 0 and ch not in template[i]:
                 #     continue
-                elif ch in self.incorrect_positions[i]:
-                    continue
-                else:
-                    letter_freq = letter_count_dict[ch][i]
-                    cur_word_sum += letter_freq
+                # elif ch in self.incorrect_positions[i]:
+                #     continue
+                # else:
+                letter_freq = letter_count_dict[ch][i]
+                cur_word_sum += letter_freq
 
             if cur_word_sum > best_guess_sum:
-                best_guess = word
+                best_first_guess = word
                 best_guess_sum = cur_word_sum
-        return best_guess
+        return best_first_guess
 
     def find_guesses(self):
         """
@@ -229,6 +240,11 @@ class Wordle:
         # Initialize the dictionary
         entropies = {}
         for guess in possible_guesses:
+            # Make a temporary template for this guess
+
+            # Find the words that fit into this temporary template
+
+            # Caluclate the length of the template
             # Calculate the current gueses entropy
             entropy = 0
             # Add the entropy to the dictionary
@@ -246,6 +262,7 @@ class Wordle:
         best_guess_entropy = entropies[best_guess]
 
         # Loop through entropies to find the highest value
+        # OR, choose the word with the shortest length of possible words
         for guess in guesses[1:]:
             cur_entropy = entropies[guess]
             if cur_entropy > best_guess_entropy:
@@ -270,13 +287,16 @@ class Wordle:
             self.run_status = False
 
     def solve(self):
+        """
+        Returns the solved final word of the Wordle game.
+        """
+        # Initialize the first guess
+        cur_guess = self.find_first_guess()
+        self.make_guess(cur_guess)
+        # Make the proceeding guesses while the game is running
         while self.run_status == True:
-            cur_guess = self.find_guess()
+            possible_guesses = self.find_guesses()
+            entropies = self.calculate_entropies(possible_guesses)
+            cur_guess = self.get_best_guess(entropies)
             self.make_guess(cur_guess)
         return cur_guess
-
-    def get_attempts(self):
-        return self.number_attempts
-
-    def get_secret_word(self):
-        return self.secret_word
