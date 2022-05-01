@@ -230,26 +230,43 @@ class Wordle:
                 else:
                     possible_guesses.append(word)
         # Should possible_guesses replace self.possible_words ???? *********************
+        self.possible_words = possible_guesses
         return possible_guesses
 
-    # calculate_shorted_next_guesses(self, possible_guesses):
+    def word_entropy(self, word):
+        from scipy.stats import entropy
+        # Initialize probability list
+        prob_list = []
+        # Get current template
+        temp_template = self.make_template()
+        # Get current represenation
+        cur_rep = [(guess, rep) for (guess, rep) in self.guesses_dict.items()][-1][1]
+        for i, ch in enumerate(word):
+            if cur_rep[i] == 2:
+                continue
+
+        chars = len(word)
+        dim = 0
+        while dim < chars:
+            for ch in word[dim:chars]:
+            dim += 1
+
+        word_entropy = entropy(prob_list, base=2)
+        return word_entropy
+
     def calculate_entropies(self, possible_guesses):
         """
         Returns a dictionary of the entropies for each possible guess
         Parameter: possible guesses = a list of guesses that could be a potential answer
         """
+        from scipy.stats import entropy
         # Initialize the dictionary
         entropies = {}
-        for guess in possible_guesses:
-            # Make a temporary template for this guess
-
-            # Find the words that could be the next possible_guesses (using find_guesses())
-
-            # Caluclate the length of the template
-            # Calculate the current gueses entropy
-            entropy = 0
+        for guess in self.possible_words:
+            # Use entropy calculation
+            word_entropy = self.word_entropy(guess)
             # Add the entropy to the dictionary
-            entropies[guess] = entropy
+            entropies[guess] = word_entropy
         return entropies
 
     def get_best_guess(self, entropies):
@@ -263,7 +280,6 @@ class Wordle:
         best_guess_entropy = entropies[best_guess]
 
         # Loop through entropies to find the highest value
-        # OR, choose the word with the shortest length of possible words
         for guess in guesses[1:]:
             cur_entropy = entropies[guess]
             if cur_entropy > best_guess_entropy:
