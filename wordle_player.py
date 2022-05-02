@@ -191,14 +191,6 @@ class Wordle:
         for word in self.possible_words[1:]:
             cur_word_sum = 0
             for i, ch in enumerate(word):
-                # if ch in self.incorrect_letters:
-                #     continue
-                # I'm not sure if this condition is neccessary......
-                # elif len(template[i]) > 0 and ch not in template[i]:
-                #     continue
-                # elif ch in self.incorrect_positions[i]:
-                #     continue
-                # else:
                 letter_freq = letter_count_dict[ch][i]
                 cur_word_sum += letter_freq
 
