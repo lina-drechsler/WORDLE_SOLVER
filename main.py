@@ -9,7 +9,7 @@ def get_solve_dict(length):
         words = data[length]
 
     solved_dict = {}
-    indices = [num for num in range(len(words))]
+    indices = [num for num in range(0, 200)]
     shuffle(indices)
     for i in indices:
         # print(i)
