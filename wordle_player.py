@@ -241,7 +241,7 @@ class Wordle:
         dim = 0
         while dim < chars:
             for ch in word[dim:chars]:
-            dim += 1
+                dim += 1
 
         word_entropy = entropy(prob_list, base=2)
         return word_entropy
