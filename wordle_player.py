@@ -1,5 +1,6 @@
 from random import randint
 import json
+from scipy.stats import entropy
 
 # Defining the Wordle class that will contain game rules and the solving algorithm
 class Wordle:
@@ -54,6 +55,18 @@ class Wordle:
         """
         return self.secret_word
 
+    def get_last_guess(self):
+        """
+        Returns the  most recent guess.
+        """
+        return [(guess, rep) for (guess, rep) in self.guesses_dict.items()][-1][0]
+
+    def get_current_rep(self):
+        """
+        Returns the represenation for most recent guess.
+        """
+        return [(guess, rep) for (guess, rep) in self.guesses_dict.items()][-1][1]
+
     def set_word(self, manual_index=0):
         """
         Returns a random word of size self.length to be used as the secret word.
@@ -88,6 +101,7 @@ class Wordle:
         """
         # Make the reprentation of the secret_word. Ex. "steam": ['s', 't', 'e', 'a', 'm']
         target_rep = [ch for ch in self.secret_word]
+        # print(target_rep)
         # Count the characters in the hidden word with a character key and character count value
         target_ch_count = {}
         for ch in target_rep:
@@ -102,7 +116,11 @@ class Wordle:
         final_rep = []
         # Assign all 2's (correct letter/correct position)
         for i, target_ch in enumerate(target_rep):
+            # for i, target_ch in range(len(target_rep)):
+            # print(f"target_rep index: {i}")
+            # print(f"guess_rep: {guess_rep}")
             guess_ch = guess_rep[i]
+            # target_ch = target_rep[i]
 
             if target_ch == guess_ch:
                 final_rep.append(2)
@@ -167,40 +185,6 @@ class Wordle:
                     self.incorrect_letters.append(ch)
 
         return template
-
-    def find_guesses(self):
-        """
-        Updates the list of potential guesses based off the current character template
-        """
-        # Get the word template that will be used to find potential guesses
-        template = self.make_template()
-        try:
-            cur_rep = [(guess, rep) for (guess, rep) in self.guesses_dict.items()][-1][
-                1
-            ]
-        except:
-            cur_rep = [num for num in range(self.length)]
-
-        possible_guesses = []
-        # Loop through all words to find possible words
-        for word in self.possible_words:
-            # Loop through the index, character in each word
-            for i, ch in enumerate(word):
-                # Go to next word if the character is in the incorrect_letters list
-                if ch in self.incorrect_letters:
-                    continue
-                # Go to next word if the character is in the values of incorrect_positions at that index
-                elif ch in self.incorrect_positions[i]:
-                    continue
-                # If the letter is already correct make sure it is there
-                elif cur_rep[i] == 2 and len(template[i]) > 0 and ch not in template[i]:
-                    continue
-                # Add the word to the possible_guesses list if it passes previous two conditions
-                else:
-                    possible_guesses.append(word)
-        # Should possible_guesses replace self.possible_words ???? *********************
-        self.possible_words = possible_guesses
-        return possible_guesses
 
     def find_first_guess(self):
         """
@@ -278,24 +262,94 @@ class Wordle:
     #         commonality_dict[guess] = score
     #     return commonality_dict
 
-    # def get_best_guess(self, commonality_dict):
-    #     """
-    #     Returns the guess with the highest entropy, i.e. the best next guess
-    #     Parameter: entropies = dictionary of possible guesses as values and entropy values
-    #     """
-    #     # Set the base condition
-    #     guesses = [word for word, _ in commonality_dict.items()]
-    #     best_guess = guesses[0]
-    #     best_guess_comm = commonality_dict[best_guess]
-    #
-    # # Loop through commonality values to find the highest value
-    # for guess in guesses[1:]:
-    #     cur_comm = commonality_dict[guess]
-    #     if cur_comm > best_guess_comm:
-    #         best_guess_comm = cur_comm
-    #         best_guess = guess
+    def find_guesses(self):
+        """
+        Updates the list of potential guesses based off the current character template
+        """
+        # Get the word template that will be used to find potential guesses
+        template = self.make_template()
+        # print(template)
+        cur_rep = self.get_current_rep()
+        # print(cur_rep)
 
-    # return best_guess
+        possible_guesses = []
+        # Loop through all words to find possible words
+        for word in self.possible_words:
+            # Loop through the index, character in each word
+            for i, ch in enumerate(word):
+                # Go to next word if the character is in the incorrect_letters list
+                if ch in self.incorrect_letters:
+                    continue
+                # Go to next word if the character is in the values of incorrect_positions at that index
+                elif ch in self.incorrect_positions[i]:
+                    continue
+                # If the letter is already correct make sure it is there
+                elif cur_rep[i] == 2 and ch not in template[i]:
+                    continue
+                # Add the word to the possible_guesses list if it passes previous two conditions
+                else:
+                    possible_guesses.append(word)
+        # Should possible_guesses replace self.possible_words ???? *********************
+        self.possible_words = possible_guesses
+        return possible_guesses
+
+    def get_best_guess(self):
+        """
+        Returns the guess with the highest entropy, i.e. the best next guess
+        Parameter: entropies = dictionary of possible guesses as values and entropy values
+        """
+        cur_rep = self.get_current_rep()
+        last_guess = self.get_last_guess()
+
+        best_word = ""
+        best_entropy = 0
+        for word in self.possible_words:
+            seen_chars = set()
+            number_greens = 0
+            number_yellows = 0
+            total_count = 0
+            for i, ch in enumerate(word):
+                # print(f"cur_rep: {cur_rep}")
+                # print(f"last_guess: {last_guess}")
+                # print(f"word_loop: {word}")
+                # print(f"word_loop index: {i}")
+                # print(f"word_loop ch: {ch}")
+                if cur_rep[i] == 2:
+                    if last_guess[i] == ch:
+                        number_greens += 1
+                        total_count += 1
+                elif cur_rep[i] == 1:
+                    if ch not in seen_chars:
+                        if last_guess[i] == ch:
+                            number_yellows += 1
+                            total_count += 1
+                        seen_chars.add(ch)
+                else:
+                    total_count += 1
+            number_grays = total_count - number_greens - number_yellows
+            total = number_greens + number_yellows + number_grays
+            dist = [number_greens / total, number_yellows / total, number_grays / total]
+            cur_entropy = entropy(dist, base=2)
+
+            if cur_entropy > best_entropy:
+                best_entropy = cur_entropy
+                best_word = word
+
+        return best_word
+
+        # # Set the base condition
+        # guesses = [word for word, _ in commonality_dict.items()]
+        # best_guess = guesses[0]
+        # best_guess_comm = commonality_dict[best_guess]
+
+        # # Loop through commonality values to find the highest value
+        # for guess in guesses[1:]:
+        #     cur_comm = commonality_dict[guess]
+        #     if cur_comm > best_guess_comm:
+        #         best_guess_comm = cur_comm
+        #         best_guess = guess
+
+        # return best_guess
 
     def make_guess(self, guess):
         """
@@ -308,6 +362,8 @@ class Wordle:
         self.number_attempts += 1
         # Remove that guess from the list of possible_words
         self.possible_words.remove(guess)
+        # Update the template
+        self.make_template()
         # If the hidden_word is found, change the run_status to False as the game has been completed.
         if guess == self.secret_word:
             self.run_status = False
@@ -316,9 +372,14 @@ class Wordle:
         """
         Returns the solved final word of the Wordle game.
         """
+        # Make the first guess
+        first_guess = self.find_first_guess()
+        self.make_guess(first_guess)
         # Make the  guesses while the game is running
         while self.run_status == True:
             self.find_guesses()
-            cur_guess = self.find_first_guess()
+            cur_guess = self.get_best_guess()
+            print(cur_guess)
             self.make_guess(cur_guess)
+            print("Made a guess")
         return cur_guess
