@@ -186,8 +186,14 @@ class Wordle:
         # Loop through all words to find possible words
         for word in self.possible_words[1:]:
             cur_word_sum = 0
+<<<<<<< HEAD
+            for i, ch in enumerate(word):
+                letter_freq = letter_count_dict[ch][i]
+                cur_word_sum += letter_freq
+=======
             letter_freq = letter_count_dict[ch][i]
             cur_word_sum += letter_freq
+>>>>>>> 219b74c23617e06881cd8829e97e9c880b18e329
 
             if cur_word_sum > best_guess_sum:
                 best_first_guess = word
@@ -259,7 +265,20 @@ class Wordle:
         # self.possible_words = possible_guesses
         # return possible_guesses
 
+<<<<<<< HEAD
+        chars = len(word)
+        dim = 0
+        while dim < chars:
+            for ch in word[dim:chars]:
+                dim += 1
+
+        word_entropy = entropy(prob_list, base=2)
+        return word_entropy
+
+    def calculate_entropies(self, possible_guesses):
+=======
     def get_best_guess(self, possible_guesses):
+>>>>>>> 219b74c23617e06881cd8829e97e9c880b18e329
         """
         Returns the guess with the highest entropy, i.e. the best next guess
         Parameter: entropies = dictionary of possible guesses as values and entropy values

@@ -1,4 +1,5 @@
-# Function returns a dictionary that sums the character counts for all words of specified lengths
+# Function returns a dictionary that sums the character 
+# counts for all words of specified lengths
 # parameters: n = word length
 def let_freq_dic_generator(n):
 
@@ -59,3 +60,9 @@ import json
 
 with open("counts.json", "w") as json_file:
     json.dump(all_counts, json_file)
+
+
+
+
+
+
