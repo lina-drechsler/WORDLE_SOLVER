@@ -1,4 +1,3 @@
-
 from random import randint
 import json
 from scipy.stats import entropy
@@ -40,7 +39,9 @@ class Wordle:
         # Load the words of self.length into a list of possible hidden_words
         with open("words.json") as json_data:
             data = json.load(json_data)
-            self.possible_words = data[str(self.length)]
+            possible_words = set(data[str(self.length)])
+            self.possible_words = list(possible_words)
+        self.unsolved_words = []
 
     def __repr__(self):
         """
@@ -155,7 +156,9 @@ class Wordle:
         # Then check for 1s
         for i, num in enumerate(rep):
             if num == 1:
-                if last_guess[i] not in cur_word or last_guess[i] == cur_word[i]:
+                if last_guess[i] == cur_word[i]:
+                    return False
+                elif last_guess[i] not in cur_word:
                     return False
         # Last check for 0s
         for i, ch in enumerate(cur_word):
@@ -263,38 +266,45 @@ class Wordle:
         """
         cur_rep = self.get_current_rep()
         last_guess = self.get_last_guess()
+        try:
+            best_word = possible_guesses[0]
+            best_entropy = 0
+            for word in possible_guesses[1:]:
+                seen_chars = set()
+                number_greens = 0
+                number_yellows = 0
+                total_count = 0
+                for i, ch in enumerate(word):
 
-        best_word = possible_guesses[0]
-        best_entropy = 0
-        for word in possible_guesses[1:]:
-            seen_chars = set()
-            number_greens = 0
-            number_yellows = 0
-            total_count = 0
-            for i, ch in enumerate(word):
-
-                if cur_rep[i] == 2:
-                    if last_guess[i] == ch:
-                        number_greens += 1
-                        total_count += 1
-                elif cur_rep[i] == 1:
-                    if ch not in seen_chars:
+                    if cur_rep[i] == 2:
                         if last_guess[i] == ch:
-                            number_yellows += 1
+                            number_greens += 1
                             total_count += 1
-                        seen_chars.add(ch)
-                else:
-                    total_count += 1
-            number_grays = total_count - number_greens - number_yellows
-            total = number_greens + number_yellows + number_grays
-            dist = [number_greens / total, number_yellows / total, number_grays / total]
-            cur_entropy = entropy(dist, base=2)
+                    elif cur_rep[i] == 1:
+                        if ch not in seen_chars:
+                            if last_guess[i] == ch:
+                                number_yellows += 1
+                                total_count += 1
+                            seen_chars.add(ch)
+                    else:
+                        total_count += 1
+                number_grays = total_count - number_greens - number_yellows
+                total = number_greens + number_yellows + number_grays
+                dist = [
+                    number_greens / total,
+                    number_yellows / total,
+                    number_grays / total,
+                ]
+                cur_entropy = entropy(dist, base=2)
 
-            if cur_entropy > best_entropy:
-                best_entropy = cur_entropy
-                best_word = word
+                if cur_entropy > best_entropy:
+                    best_entropy = cur_entropy
+                    best_word = word
 
-        return best_word
+            return best_word
+        except:
+            self.unsolved_words.append(self.secret_word)
+            return self.secret_word
 
     def make_guess(self, guess):
         """
@@ -307,7 +317,10 @@ class Wordle:
         # Increase the number of attempts
         self.number_attempts += 1
         # Remove that guess from the list of possible_words
-        self.possible_words.remove(guess)
+        try:
+            self.possible_words.remove(guess)
+        except:
+            self.unsolved_words.append(self.secret_word)
         # If the hidden_word is found, change the run_status to False as the game has been completed.
         if guess == self.secret_word:
             self.run_status = False
@@ -318,7 +331,7 @@ class Wordle:
         """
         # Make the first guess
         first_guess = self.find_first_guess()
-        self.make_guess(first_guess)
+        cur_guess = self.make_guess(first_guess)
         # Make the  guesses while the game is running
         while self.run_status == True:
             possible_guesses = self.find_guesses()
@@ -326,4 +339,7 @@ class Wordle:
             print(cur_guess)
             self.make_guess(cur_guess)
             print("Made a guess")
+            if self.secret_word in self.unsolved_words:
+                self.run_status = False
+                return self.secret_word
         return cur_guess
