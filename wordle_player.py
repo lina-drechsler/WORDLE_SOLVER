@@ -1,7 +1,6 @@
 
 from random import randint
 import json
-from sys import last_traceback
 from scipy.stats import entropy
 
 # Defining the Wordle class that will contain game rules and the solving algorithm
@@ -204,7 +203,7 @@ class Wordle:
 
         # Loop through all words to find possible words
         for word in self.possible_words:
-            if self.word_in_rep(word, cur_rep, last_traceback) == True:
+            if self.word_in_rep(word, cur_rep, last_guess) == True:
                 continue
             else:
                 possible_guesses.remove(word)
