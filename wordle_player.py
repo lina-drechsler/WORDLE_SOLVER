@@ -1,6 +1,7 @@
 import enum
 from random import randint
 import json
+from sys import last_traceback
 from scipy.stats import entropy
 
 # Defining the Wordle class that will contain game rules and the solving algorithm
@@ -143,6 +144,27 @@ class Wordle:
                     self.incorrect_letters.append(guess_ch)
         return final_rep
 
+    def word_in_rep(self, cur_word, rep, last_guess):
+        """
+        Returns True if the word fits in the representation, else returns False
+        """
+        # First check for 2s
+        for i, num in enumerate(rep):
+            if num == 2:
+                if cur_word[i] != last_guess[i]:
+                    return False
+        # Then check for 1s
+        for i, num in enumerate(rep):
+            if num == 1:
+                if last_guess[i] not in cur_word or last_guess[i] == cur_word[i]:
+                    return False
+        # Last check for 0s
+        for i, ch in enumerate(cur_word):
+            if ch in self.incorrect_letters:
+                return False
+
+        return True
+
     def find_first_guess(self):
         """
         Returns the "optimal" first guess based on the character frequency per position
@@ -176,53 +198,64 @@ class Wordle:
         """
         # Get the word template that will be used to find potential guesses
         cur_rep = self.get_current_rep()
+        last_guess = self.get_last_guess()
 
-        possible_guesses = self.possible_words
+        possible_guesses = [word for word in self.possible_words]
+
         # Loop through all words to find possible words
         for word in self.possible_words:
-            # Checks for a previous guess
-            if word in [guess for guess, _ in self.guesses_dict.items()]:
+            if self.word_in_rep(word, cur_rep, last_traceback) == True:
+                continue
+            else:
                 possible_guesses.remove(word)
-            # Checks to make sure that the word contains a letter if it's in the wrong position earlier
-            word_rep = [ch for ch in word]
-            incorrect_pos_tracker = True
-            for pos, letter_set in self.incorrect_positions.items():
-                if len(letter_set) > 0:
-                    for ch in letter_set:
-                        if ch not in word_rep:
-                            incorrect_pos_tracker = False
-            if incorrect_pos_tracker == False:
-                try:
-                    possible_guesses.remove(word)
-                    continue
-                except:
-                    continue
-            # Loop through the index, character in each word
-            good_word = True
-            for i, ch in enumerate(word):
-                # Go to next word if the character is in the incorrect_letters list
-                if ch in self.incorrect_letters:
-                    good_word = False
-                    try:
-                        possible_guesses.remove(word)
-                    except:
-                        continue
-                # Go to next word if the character is in the values of incorrect_positions at that index
-                elif ch in self.incorrect_positions[i]:
-                    good_word = False
-                    try:
-                        possible_guesses.remove(word)
-                    except:
-                        continue
-                # If the letter is already correct make sure it is there
-                elif cur_rep[i] == 2 and word[i] != ch:
-                    good_word = False
-                    try:
-                        possible_guesses.remove(word)
-                    except:
-                        continue
-        self.possible_words = possible_guesses
+
+        # Update the possible words
+        self.possible_words = [word for word in possible_guesses]
         return possible_guesses
+
+        # # Checks for a previous guess
+        # if word in [guess for guess, _ in self.guesses_dict.items()]:
+        #     possible_guesses.remove(word)
+        # # Checks to make sure that the word contains a letter if it's in the wrong position earlier
+        # word_rep = [ch for ch in word]
+        # incorrect_pos_tracker = True
+        # for pos, letter_set in self.incorrect_positions.items():
+        #     if len(letter_set) > 0:
+        #         for ch in letter_set:
+        #             if ch not in word_rep:
+        #                 incorrect_pos_tracker = False
+        # if incorrect_pos_tracker == False:
+        #     try:
+        #         possible_guesses.remove(word)
+        #         continue
+        #     except:
+        #         continue
+        # # Loop through the index, character in each word
+        # good_word = True
+        # for i, ch in enumerate(word):
+        #     # Go to next word if the character is in the incorrect_letters list
+        #     if ch in self.incorrect_letters:
+        #         good_word = False
+        #         try:
+        #             possible_guesses.remove(word)
+        #         except:
+        #             continue
+        #     # Go to next word if the character is in the values of incorrect_positions at that index
+        #     elif ch in self.incorrect_positions[i]:
+        #         good_word = False
+        #         try:
+        #             possible_guesses.remove(word)
+        #         except:
+        #             continue
+        #     # If the letter is already correct make sure it is there
+        #     elif cur_rep[i] == 2 and word[i] != ch:
+        #         good_word = False
+        #         try:
+        #             possible_guesses.remove(word)
+        #         except:
+        #             continue
+        # self.possible_words = possible_guesses
+        # return possible_guesses
 
     def get_best_guess(self, possible_guesses):
         """
@@ -271,7 +304,7 @@ class Wordle:
         """
         # Add the guess and it's resulting represnation to the guesses_dict
         self.guesses_dict[guess] = self.result_rep(guess)
-        print(self.guesses_dict)
+        # print(self.guesses_dict)
         # Increase the number of attempts
         self.number_attempts += 1
         # Remove that guess from the list of possible_words

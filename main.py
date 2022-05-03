@@ -4,12 +4,12 @@ from random import shuffle
 
 
 def get_solve_dict(length):
-    with open("words.json") as json_data:
-        data = json.load(json_data)
-        words = data[length]
+    # with open("words.json") as json_data:
+    #     data = json.load(json_data)
+    #     words = data[length]
 
     solved_dict = {}
-    indices = [num for num in range(0, 200)]
+    indices = [num for num in range(0, 50)]
     shuffle(indices)
     for i in indices:
         # print(i)
