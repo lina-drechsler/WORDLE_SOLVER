@@ -293,10 +293,22 @@ class Wordle:
         while self.run_status == True:
             possible_guesses = self.find_guesses()
             cur_guess = self.get_best_guess(possible_guesses)
-            print(cur_guess)
+            # print(cur_guess)
             self.make_guess(cur_guess)
-            print("Made a guess")
+            # print("Made a guess")
             if self.secret_word in self.unsolved_words:
                 self.run_status = False
                 return self.secret_word
         return cur_guess
+
+
+# # Testing functionality
+# for i in range(5):
+game = Wordle(
+    length=5,
+)
+game.secret_word = "chair"
+print(game)
+game.solve()
+print(f"# Attempts: {game.get_attempts()}")
+print(f"Game guesses: {game.guesses_dict}")
