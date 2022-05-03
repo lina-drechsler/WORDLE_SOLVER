@@ -4,10 +4,6 @@ from random import shuffle
 
 
 def get_solve_dict(length):
-    # with open("words.json") as json_data:
-    #     data = json.load(json_data)
-    #     words = data[length]
-
     solved_dict = {}
     indices = [num for num in range(0, 100)]
     shuffle(indices)
@@ -26,7 +22,6 @@ def get_solve_dict(length):
 
 def main():
     lengths = ["3", "4", "5", "6", "7", "8", "9", "10"]
-    # lengths = ["5"]
     word_guess_dict = {}
     word_guess_dict["Unsolved"] = []
     average_guess_dict = {}

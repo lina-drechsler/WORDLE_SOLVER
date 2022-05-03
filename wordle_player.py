@@ -186,14 +186,9 @@ class Wordle:
         # Loop through all words to find possible words
         for word in self.possible_words[1:]:
             cur_word_sum = 0
-<<<<<<< HEAD
             for i, ch in enumerate(word):
                 letter_freq = letter_count_dict[ch][i]
                 cur_word_sum += letter_freq
-=======
-            letter_freq = letter_count_dict[ch][i]
-            cur_word_sum += letter_freq
->>>>>>> 219b74c23617e06881cd8829e97e9c880b18e329
 
             if cur_word_sum > best_guess_sum:
                 best_first_guess = word
@@ -221,64 +216,7 @@ class Wordle:
         self.possible_words = [word for word in possible_guesses]
         return possible_guesses
 
-        # # Checks for a previous guess
-        # if word in [guess for guess, _ in self.guesses_dict.items()]:
-        #     possible_guesses.remove(word)
-        # # Checks to make sure that the word contains a letter if it's in the wrong position earlier
-        # word_rep = [ch for ch in word]
-        # incorrect_pos_tracker = True
-        # for pos, letter_set in self.incorrect_positions.items():
-        #     if len(letter_set) > 0:
-        #         for ch in letter_set:
-        #             if ch not in word_rep:
-        #                 incorrect_pos_tracker = False
-        # if incorrect_pos_tracker == False:
-        #     try:
-        #         possible_guesses.remove(word)
-        #         continue
-        #     except:
-        #         continue
-        # # Loop through the index, character in each word
-        # good_word = True
-        # for i, ch in enumerate(word):
-        #     # Go to next word if the character is in the incorrect_letters list
-        #     if ch in self.incorrect_letters:
-        #         good_word = False
-        #         try:
-        #             possible_guesses.remove(word)
-        #         except:
-        #             continue
-        #     # Go to next word if the character is in the values of incorrect_positions at that index
-        #     elif ch in self.incorrect_positions[i]:
-        #         good_word = False
-        #         try:
-        #             possible_guesses.remove(word)
-        #         except:
-        #             continue
-        #     # If the letter is already correct make sure it is there
-        #     elif cur_rep[i] == 2 and word[i] != ch:
-        #         good_word = False
-        #         try:
-        #             possible_guesses.remove(word)
-        #         except:
-        #             continue
-        # self.possible_words = possible_guesses
-        # return possible_guesses
-
-<<<<<<< HEAD
-        chars = len(word)
-        dim = 0
-        while dim < chars:
-            for ch in word[dim:chars]:
-                dim += 1
-
-        word_entropy = entropy(prob_list, base=2)
-        return word_entropy
-
-    def calculate_entropies(self, possible_guesses):
-=======
     def get_best_guess(self, possible_guesses):
->>>>>>> 219b74c23617e06881cd8829e97e9c880b18e329
         """
         Returns the guess with the highest entropy, i.e. the best next guess
         Parameter: entropies = dictionary of possible guesses as values and entropy values
